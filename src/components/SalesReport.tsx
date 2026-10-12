@@ -20,9 +20,15 @@ const SalesReport = () => {
       dailyMap[day] = (dailyMap[day] || 0) + o.total;
     });
 
-    const dailyData = Object.entries(dailyMap)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, revenue]) => ({ date: date.split("-")[2], revenue }));
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const monthLength = new Date(year, month, 0).getDate();
+    const today = new Date();
+    const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+    const daysToShow = selectedMonth === currentMonth ? today.getDate() : monthLength;
+    const dailyData = Array.from({ length: daysToShow }, (_, index) => {
+      const day = String(index + 1).padStart(2, "0");
+      return { date: day, revenue: dailyMap[`${selectedMonth}-${day}`] || 0 };
+    });
 
     const itemMap: Record<string, { qty: number; revenue: number }> = {};
     filtered.forEach((o) =>
@@ -77,21 +83,20 @@ const SalesReport = () => {
         </div>
       </div>
 
-      {monthlyData.dailyData.length > 0 ? (
-        <div className="bg-card border border-border rounded-lg p-4">
+      <div className="bg-card border border-border rounded-lg p-4">
           <h3 className="text-sm font-semibold text-foreground mb-3">Daily Revenue</h3>
+          {monthlyData.totalOrders === 0 && (
+            <p className="text-sm text-muted-foreground mb-3">No sales recorded for this month yet</p>
+          )}
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={monthlyData.dailyData}>
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} interval={Math.max(0, Math.ceil(monthlyData.dailyData.length / 10) - 1)} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip formatter={(v: number) => `₹${v}`} />
-              <Bar dataKey="revenue" fill="hsl(15, 70%, 45%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-      ) : (
-        <p className="text-center text-muted-foreground py-8">No sales data for this month</p>
-      )}
 
       {monthlyData.topItems.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4">
