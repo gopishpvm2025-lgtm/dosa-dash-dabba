@@ -1,0 +1,3 @@
+- [ ] Add manager monthly sales analysis through a secure Cloud Edge Function and AI Gateway.
+- [ ] Add printable PDF export of the selected-month sales graph and totals.
+- [ ] Verify Cloud function response, report UI, and printable export.
